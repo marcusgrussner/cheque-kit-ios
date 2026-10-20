@@ -1,0 +1,18 @@
+# macOS: Finder metadata, never useful to anyone else
+.DS_Store
+
+# SwiftPM: build output and Xcode-generated package state
+/.build/
+/.swiftpm/
+/Packages/
+
+# Xcode: per-user state (window layout, breakpoints) and build caches
+xcuserdata/
+DerivedData/
+*.xcuserstate
+
+# Safety net: real cheques must never live in this repo (they live in ~/ChequeKit-PrivateSamples)
+PrivateSamples/
+
+# Personal Claude Code instructions (learning-mode protocol) — private to this machine
+CLAUDE.local.md
