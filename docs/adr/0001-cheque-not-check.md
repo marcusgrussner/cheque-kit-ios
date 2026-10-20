@@ -1,0 +1,3 @@
+# Use "Cheque", not "Check", as the domain term
+
+ChequeKit's public API, docs and glossary call the instrument a **cheque** (`Cheque`, `chequeNumber`, `ChequeKitUI`), even though American English, the usual default for Swift APIs, spells it "check". In code, "check" is overwhelmingly a verb (validate, verify), and the domain itself needs the term "check digit"; naming the instrument `Check` would produce ambiguous names such as `CheckValidator` or `check.checkDigits`. "Cheque" is also the British spelling and the Portuguese word, so it reads unambiguously to international and Brazilian developers alike. Renaming public types later would be a breaking change, so the term is fixed from the first commit.
