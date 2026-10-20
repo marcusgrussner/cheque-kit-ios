@@ -5,11 +5,11 @@ let package = Package(
     name: "ChequeKit",
     platforms: [
         .iOS(.v15),
-        .macOS(.v12)
+        .macOS(.v12),
     ],
     products: [
         .library(name: "ChequeKit", targets: ["ChequeKit"]),
-        .library(name: "ChequeKitUI", targets: ["ChequeKitUI"])
+        .library(name: "ChequeKitUI", targets: ["ChequeKitUI"]),
     ],
     targets: [
         .target(name: "ChequeKit"),
@@ -24,7 +24,7 @@ let package = Package(
         .testTarget(
             name: "ChequeKitUITests",
             dependencies: [.target(name: "ChequeKitUI")]
-        )
+        ),
     ],
     swiftLanguageModes: [.v6]
 )
