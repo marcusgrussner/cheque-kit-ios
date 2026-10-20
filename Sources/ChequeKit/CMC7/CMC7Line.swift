@@ -26,10 +26,13 @@ struct CMC7Line: Equatable {
     /// ```swift
     /// do {
     ///     let line = try CMC7Line(parsing: "12A")
-    /// } catch .invalidCharacter(let character, let position) {
-    ///     // character == "A", position == 3
-    /// } catch .invalidLength(let count) {
-    ///     // ...
+    /// } catch {
+    ///     switch error {
+    ///     case .invalidCharacter(let character, let position):
+    ///         // character == "A", position == 3
+    ///     case .invalidLength(let count):
+    ///         // ...
+    ///     }
     /// }
     /// ```
     enum FormatError: Error, Equatable {
