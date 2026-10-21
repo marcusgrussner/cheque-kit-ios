@@ -3,7 +3,7 @@
 /// The codes come from BCB Circular 1.976/1991. A code outside that list does not make a
 /// line unreadable: it becomes ``unrecognized(_:)`` and keeps the digit as read, so a new or
 /// unexpected code is reported instead of rejected.
-enum ChequeType: Equatable {
+public enum ChequeType: Sendable, Hashable {
     /// An ordinary cheque, code 5.
     case ordinary
 
