@@ -12,7 +12,7 @@
 /// symbols. It does not validate the check digits, so a well-formed line whose check digits
 /// do not match still parses. Code fields are `String` values so they keep their leading
 /// zeros; the cheque type is a ``ChequeType``.
-struct CMC7Line: Equatable {
+public struct CMC7Line: Sendable, Hashable {
     /// The reason a text is not a well-formed CMC-7 line.
     ///
     /// Characters are checked before length, so a text that is both too short and has an
@@ -30,7 +30,7 @@ struct CMC7Line: Equatable {
     ///     }
     /// }
     /// ```
-    enum FormatError: Error, Equatable {
+    public enum FormatError: Error, Hashable {
         /// The text contains a character that is not an ASCII digit.
         ///
         /// Non-ASCII digits, such as Arabic-Indic or full-width digits, and separator
@@ -63,7 +63,7 @@ struct CMC7Line: Equatable {
     ///     let (printed, guarded) = line.checkDigit(for: group)
     /// }
     /// ```
-    enum Group: CaseIterable {
+    public enum Group: Sendable, Hashable, CaseIterable {
         /// The 8 digits at positions 1–8: bank code, branch and a check digit.
         case first
 
@@ -75,7 +75,7 @@ struct CMC7Line: Equatable {
     }
 
     /// The number of digits in a well-formed CMC-7 line.
-    static let length = 30
+    public static let length = 30
 
     private let digits: [Int]
 
@@ -93,7 +93,7 @@ struct CMC7Line: Equatable {
     /// - Throws: ``FormatError/invalidCharacter(_:position:)`` for the first character that
     ///   is not an ASCII digit, or ``FormatError/invalidLength(_:)`` when the text has only
     ///   ASCII digits but not exactly ``length`` of them.
-    init(parsing text: String) throws(FormatError) {
+    public init(parsing text: String) throws(FormatError) {
         var digits: [Int] = []
         for (offset, character) in text.enumerated() {
             guard character.isASCII, let digit = character.wholeNumberValue else {
@@ -109,12 +109,26 @@ struct CMC7Line: Equatable {
 
     // MARK: - Fields
 
-    var bankCode: String { field(in: 0..<3) }
-    var branch: String { field(in: 3..<7) }
-    var clearingCode: String { field(in: 8..<11) }
-    var chequeNumber: String { field(in: 11..<17) }
-    var chequeType: ChequeType { ChequeType(code: digits[17]) }
-    var accountField: String { field(in: 19..<29) }
+    /// The COMPE code of the bank the cheque is drawn on.
+    public var bankCode: String { field(in: 0..<3) }
+
+    /// The code of the bank branch (agência) that holds the drawer's account.
+    public var branch: String { field(in: 3..<7) }
+
+    /// The code of the clearing location (praça de compensação) the cheque is cleared through.
+    public var clearingCode: String { field(in: 8..<11) }
+
+    /// The number that identifies the cheque within the drawer's account.
+    public var chequeNumber: String { field(in: 11..<17) }
+
+    /// The kind of cheque, decoded from the cheque type digit.
+    public var chequeType: ChequeType { ChequeType(code: digits[17]) }
+
+    /// The digits that encode the drawer's account, in a layout each bank defines for itself.
+    ///
+    /// The account field is not the account number: deriving the number from it depends on
+    /// the bank's layout, which ChequeKit does not decode.
+    public var accountField: String { field(in: 19..<29) }
 
     // MARK: - Check Digits
 
