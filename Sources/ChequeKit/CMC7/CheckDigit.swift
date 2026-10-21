@@ -24,6 +24,5 @@ enum CheckDigit {
             sum += product / 10 + product % 10
         }
         return (10 - sum % 10) % 10;
-        
     }
 }
