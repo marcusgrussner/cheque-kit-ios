@@ -85,8 +85,8 @@ struct CMC7Line: Equatable {
     /// separator symbols, spaces or other characters. The check digits are not validated.
     ///
     /// ```swift
-    /// let line = try CMC7Line(parsing: "341067330330018805201725766099")
-    /// line.branch  // "0673"
+    /// let line = try CMC7Line(parsing: "001123410180001235200001234566")
+    /// line.branch  // "1234"
     /// ```
     ///
     /// - Parameter text: The CMC-7 line as plain digits.

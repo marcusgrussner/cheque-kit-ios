@@ -11,7 +11,7 @@ enum CheckDigit {
     /// `(10 - sum % 10) % 10`.
     ///
     /// ```swift
-    /// CheckDigit.compute(for: [3, 4, 1, 0, 6, 7, 3])  // 2
+    /// CheckDigit.compute(for: [0, 0, 1, 1, 2, 3, 4])  // 2
     /// ```
     ///
     /// - Parameter digits: The guarded digits, most significant first, each in `0...9`.

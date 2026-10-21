@@ -1,8 +1,9 @@
 /// Test data shared by the ChequeKit test suites.
 enum Fixtures {
-    /// A CMC-7 line from an Itaú cheque whose three check digits all match.
+    /// A synthetic CMC-7 line whose three check digits all match.
     ///
-    /// Groups: `34106733` · `0330018805` · `201725766099`. Published as an example on the
-    /// ACBr forum: https://www.projetoacbr.com.br/forum/topic/38733-problema-ao-desmembrar-c1-utilizando-o-cmc7-do-cheque/
-    static let itauLine = "341067330330018805201725766099"
+    /// It belongs to no real cheque: bank code `001`, branch `1234`, clearing code `018`,
+    /// cheque number `000123`, cheque type 5 and account field `0000123456`, with check digits
+    /// recomputed for those values. Groups: `00112341` · `0180001235` · `200001234566`.
+    static let specimenLine = "001123410180001235200001234566"
 }
