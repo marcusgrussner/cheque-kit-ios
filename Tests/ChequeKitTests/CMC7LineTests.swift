@@ -2,63 +2,87 @@ import Testing
 
 @testable import ChequeKit
 
-@Test("Splits a CMC-7 line into its fields")
-func parsesLineIntoFields() throws {
-    // GIVEN
-    let text = "341067330330018805201725766099"
+struct CMC7LineTests {
+    @Test("Splits a CMC-7 line into its fields")
+    func parsesLineIntoFields() throws {
+        // GIVEN
+        let text = Fixtures.itauLine
 
-    // WHEN
-    let line = try CMC7Line(parsing: text)
+        // WHEN
+        let line = try CMC7Line(parsing: text)
 
-    // THEN
-    #expect(line.bankCode == "341")
-    #expect(line.branch == "0673")
-    #expect(line.clearingCode == "033")
-    #expect(line.chequeNumber == "001880")
-    #expect(line.chequeType == "5")
-    #expect(line.accountField == "0172576609")
-}
-
-@Test(
-    "Rejects a line that does not have 30 digits",
-    arguments: [
-        ("", 0),
-        ("34106733033001880520172576609", 29),  // Itaú line without its last digit
-        ("3410673303300188052017257660991", 31),  // Itaú line with an extra digit
-    ]
-)
-func rejectsWrongLength(text: String, count: Int) {
-    #expect(throws: CMC7Line.FormatError.invalidLength(count)) {
-        try CMC7Line(parsing: text)
+        // THEN
+        #expect(line.bankCode == "341")
+        #expect(line.branch == "0673")
+        #expect(line.clearingCode == "033")
+        #expect(line.chequeNumber == "001880")
+        #expect(line.chequeType == .ordinary)
+        #expect(line.accountField == "0172576609")
     }
-}
 
-@Test(
-    "Rejects a line with a character that is not an ASCII digit",
-    arguments: [
-        ("34106733A330018805201725766099", "A", 9),
-        ("34106733 0330018805201725766099", " ", 9),  // separators are not accepted yet
-        ("٣41067330330018805201725766099", "٣", 1),  // Arabic-Indic digit three
-        ("３41067330330018805201725766099", "３", 1),  // full-width digit three
-        ("12A", "A", 3),  // characters are checked before length
-    ]
-)
-func rejectsInvalidCharacter(text: String, character: Character, position: Int) {
-    #expect(throws: CMC7Line.FormatError.invalidCharacter(character, position: position)) {
-        try CMC7Line(parsing: text)
+    @Test(
+        "Rejects a line that does not have 30 digits",
+        arguments: [
+            ("", 0),
+            (String(Fixtures.itauLine.dropLast()), 29),
+            (Fixtures.itauLine + "1", 31),
+        ]
+    )
+    func rejectsWrongLength(text: String, count: Int) {
+        // WHEN / THEN
+        #expect(throws: CMC7Line.FormatError.invalidLength(count)) {
+            try CMC7Line(parsing: text)
+        }
     }
-}
 
-// Parsing checks the shape of a line, not its check digits: a well-formed line whose
-// check digits do not match still parses, and becomes an unverified reading later.
-@Test("Parses a well-formed line even when its check digits do not match")
-func parsesLineWithMismatchedCheckDigit() throws {
-    // GIVEN the Itaú line with its last check digit changed from 9 to 0
-    let text = "341067330330018805201725766090"
+    @Test(
+        "Rejects a line with a character that is not an ASCII digit",
+        arguments: [
+            (Fixtures.itauLine.replacing(position: 9, with: "A"), "A", 9),
+            (Fixtures.itauLine.replacing(position: 9, with: " "), " ", 9),  // separators are not accepted yet
+            (Fixtures.itauLine.replacing(position: 1, with: "٣"), "٣", 1),  // Arabic-Indic digit three
+            (Fixtures.itauLine.replacing(position: 1, with: "３"), "３", 1),  // full-width digit three
+            ("12A", "A", 3),  // characters are checked before length
+        ]
+    )
+    func rejectsInvalidCharacter(text: String, character: Character, position: Int) {
+        // WHEN / THEN
+        #expect(throws: CMC7Line.FormatError.invalidCharacter(character, position: position)) {
+            try CMC7Line(parsing: text)
+        }
+    }
 
-    // WHEN
-    let line = try CMC7Line(parsing: text)
+    // Parsing checks the shape of a line, not its check digits: a well-formed line whose
+    // check digits do not match still parses, and becomes an unverified reading later.
+    @Test("Parses a well-formed line even when its check digits do not match")
+    func parsesLineWithMismatchedCheckDigit() throws {
+        // GIVEN the Itaú line with its last check digit misread as 0
+        let text = Fixtures.itauLine.replacing(position: 30, with: "0")
 
-    // THEN
-    #expect(line.accountField == "0172576609")
+        // WHEN
+        let line = try CMC7Line(parsing: text)
+
+        // THEN
+        #expect(line.accountField == "0172576609")
+    }
+
+    @Test(
+        "Locates each check digit and the digits it guards",
+        arguments: [
+            (.first, 2, [3, 4, 1, 0, 6, 7, 3]),  // position 19 guards positions 1–7
+            (.second, 3, [0, 3, 3, 0, 0, 1, 8, 8, 0, 5]),  // position 8 guards positions 9–18
+            (.third, 9, [0, 1, 7, 2, 5, 7, 6, 6, 0, 9]),  // position 30 guards positions 20–29
+        ] as [(CMC7Line.Group, Int, [Int])]
+    )
+    func locatesCheckDigit(group: CMC7Line.Group, printed: Int, guarded: [Int]) throws {
+        // GIVEN
+        let line = try CMC7Line(parsing: Fixtures.itauLine)
+
+        // WHEN
+        let checkDigit = line.checkDigit(for: group)
+
+        // THEN
+        #expect(checkDigit.printed == printed)
+        #expect(checkDigit.guarded == guarded)
+    }
 }

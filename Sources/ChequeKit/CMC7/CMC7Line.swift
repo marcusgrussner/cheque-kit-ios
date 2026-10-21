@@ -10,13 +10,8 @@
 ///
 /// Parsing checks only the shape of the line: exactly 30 ASCII digits, without separator
 /// symbols. It does not validate the check digits, so a well-formed line whose check digits
-/// do not match still parses. Fields are `String` values so they keep their leading zeros.
-///
-/// ```swift
-/// let line = try CMC7Line(parsing: "341067330330018805201725766099")
-/// line.bankCode      // "341"
-/// line.chequeNumber  // "001880"
-/// ```
+/// do not match still parses. Code fields are `String` values so they keep their leading
+/// zeros; the cheque type is a ``ChequeType``.
 struct CMC7Line: Equatable {
     /// The reason a text is not a well-formed CMC-7 line.
     ///
@@ -50,6 +45,33 @@ struct CMC7Line: Equatable {
         ///
         /// - Parameter count: The number of digits the text contains.
         case invalidLength(Int)
+    }
+
+    /// One of the three groups of a CMC-7 line.
+    ///
+    /// Each group is guarded by one check digit, which guards the group's data digits and is
+    /// not always printed in the group it guards:
+    ///
+    /// | Group | Positions | Guarded positions | Check digit position |
+    /// | ----- | --------- | ----------------- | -------------------- |
+    /// | ``first`` | 1–8 | 1–7 | 19 |
+    /// | ``second`` | 9–18 | 9–18 | 8 |
+    /// | ``third`` | 19–30 | 20–29 | 30 |
+    ///
+    /// ```swift
+    /// for group in CMC7Line.Group.allCases {
+    ///     let (printed, guarded) = line.checkDigit(for: group)
+    /// }
+    /// ```
+    enum Group: CaseIterable {
+        /// The 8 digits at positions 1–8: bank code, branch and a check digit.
+        case first
+
+        /// The 10 digits at positions 9–18: clearing code, cheque number and cheque type.
+        case second
+
+        /// The 12 digits at positions 19–30: a check digit, the account field and a check digit.
+        case third
     }
 
     /// The number of digits in a well-formed CMC-7 line.
@@ -91,8 +113,24 @@ struct CMC7Line: Equatable {
     var branch: String { field(in: 3..<7) }
     var clearingCode: String { field(in: 8..<11) }
     var chequeNumber: String { field(in: 11..<17) }
-    var chequeType: String { field(in: 17..<18) }
+    var chequeType: ChequeType { ChequeType(code: digits[17]) }
     var accountField: String { field(in: 19..<29) }
+
+    // MARK: - Check Digits
+
+    /// Returns the check digit printed on the line for a group, and the digits it guards.
+    ///
+    /// - Parameter group: The group whose check digit to locate.
+    /// - Returns: `printed`, the check digit as read from the line, and `guarded`, the digits
+    ///   it guards, most significant first. On a line whose check digit matches,
+    ///   `CheckDigit.compute(for: guarded) == printed`.
+    func checkDigit(for group: Group) -> (printed: Int, guarded: [Int]) {
+        switch group {
+        case .first: (printed: digits[18], guarded: Array(digits[0..<7]))
+        case .second: (printed: digits[7], guarded: Array(digits[8..<18]))
+        case .third: (printed: digits[29], guarded: Array(digits[19..<29]))
+        }
+    }
 
     // MARK: - Private Methods
 
