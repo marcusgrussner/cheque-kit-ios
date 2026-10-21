@@ -1,9 +1,8 @@
-/// The mod 10 algorithm behind the three check digits of a CMC-7 line.
+/// The mod 10 algorithm behind the three check digits of a CMC-7 line, which is the Luhn
+/// check digit.
 ///
-/// Each check digit sits in a different group from the digits it guards:
-/// the one at position 19 guards positions 1–7, the one at position 8
-/// guards positions 9–18, and the one at position 30 guards positions 20–29.
-/// All three use the same algorithm, which is the Luhn check digit.
+/// Which digits each check digit guards, and where it is printed, is described in
+/// ``CMC7Line/Group``.
 enum CheckDigit {
     /// Computes the check digit that guards the given digits.
     ///
