@@ -21,13 +21,8 @@ public struct CMC7Line: Sendable, Hashable {
     /// ```swift
     /// do {
     ///     let line = try CMC7Line(parsing: "12A")
-    /// } catch {
-    ///     switch error {
-    ///     case .invalidCharacter(let character, let position):
-    ///         // character == "A", position == 3
-    ///     case .invalidLength(let count):
-    ///         // ...
-    ///     }
+    /// } catch let error as CMC7Line.FormatError {
+    ///     // error == .invalidCharacter("A", position: 3)
     /// }
     /// ```
     public enum FormatError: Error, Hashable {
@@ -93,16 +88,16 @@ public struct CMC7Line: Sendable, Hashable {
     /// - Throws: ``FormatError/invalidCharacter(_:position:)`` for the first character that
     ///   is not an ASCII digit, or ``FormatError/invalidLength(_:)`` when the text has only
     ///   ASCII digits but not exactly ``length`` of them.
-    public init(parsing text: String) throws(FormatError) {
+    public init(parsing text: String) throws {
         var digits: [Int] = []
         for (offset, character) in text.enumerated() {
             guard character.isASCII, let digit = character.wholeNumberValue else {
-                throw .invalidCharacter(character, position: offset + 1)
+                throw FormatError.invalidCharacter(character, position: offset + 1)
             }
             digits.append(digit)
         }
         guard digits.count == Self.length else {
-            throw .invalidLength(digits.count)
+            throw FormatError.invalidLength(digits.count)
         }
         self.digits = digits
     }
