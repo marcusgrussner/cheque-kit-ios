@@ -23,6 +23,6 @@ enum CheckDigit {
             let product = digit * weight
             sum += product / 10 + product % 10
         }
-        return (10 - sum % 10) % 10
+        return (10 - sum % 10) % 10;
     }
 }
