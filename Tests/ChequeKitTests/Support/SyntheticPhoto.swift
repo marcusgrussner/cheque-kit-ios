@@ -5,7 +5,9 @@ import CoreGraphics
 /// Photos for imaging tests: a plain cheque-shaped card on a uniform background.
 enum SyntheticPhoto {
     /// Draws a photo with a cheque at the given corners, or an empty background when `cheque` is `nil`.
-    static func make(cheque: ChequeCorners?, background: CGFloat = 0.2, size: CGSize = CGSize(width: 2000, height: 1600)) -> CGImage {
+    static func make(
+        cheque: ChequeCorners?, background: CGFloat = 0.2, size: CGSize = CGSize(width: 2000, height: 1600)
+    ) -> CGImage {
         let context = CGContext(
             data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: 8, bytesPerRow: 0,
             space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)!
