@@ -23,12 +23,13 @@ for row in csv.split(whereSeparator: \.isNewline).dropFirst() {
         print(id, "ground truth is not a verified line, skipped")
         continue
     }
-    let image = try loadImage(at: samplesFolder.appending(path: "\(id)-front.heic"))
-    for configuration in configurations {
-        let text = try recognizeText(in: image, revision: configuration.revision, level: configuration.level)
-        let level = configuration.level == .fast ? "fast" : "accurate"
-        print(id, "revision \(configuration.revision) \(level):", report(recognized: text, groundTruth: groundTruth))
-    }
+    let image = GreyImage(try loadImage(at: samplesFolder.appending(path: "\(id)-front.heic")))
+    let band = findBandRows(in: image)
+    let bars = findBars(in: image, rows: band)
+    let gaps = zip(bars, bars.dropFirst()).map { $1.lowerBound - $0.upperBound }
+    print(id, "band rows \(band), \(bars.count) bars")
+    print("  bar widths:", histogram(bars.map(\.count)))
+    print("  gaps:", histogram(gaps))
 }
 
 // MARK: - Images
@@ -59,6 +60,13 @@ func recognizeText(in image: CGImage, revision: Int, level: VNRequestTextRecogni
 }
 
 // MARK: - Report
+
+func histogram(_ values: [Int]) -> String {
+    Dictionary(grouping: values, by: \.self)
+        .sorted { $0.key < $1.key }
+        .map { "\($0.key)×\($0.value.count)" }
+        .joined(separator: " ")
+}
 
 func report(recognized text: String, groundTruth: String) -> String {
     let shape = String(text.map { $0.isASCII && $0.isNumber ? "#" : $0 })
