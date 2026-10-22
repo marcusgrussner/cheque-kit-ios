@@ -1,3 +1,6 @@
+import ChequeKit
+import CoreGraphics
+
 /// The CMC-7 characters by the pattern of their six intervals: S for a short interval, L for a long one.
 let cmc7Characters: [String: Character] = [
     "SSLLSS": "0", "LSSSLS": "1", "SLLSSS": "2", "LSLSSS": "3", "LSSLSS": "4",
@@ -29,6 +32,21 @@ func decode(bars: [Range<Int>]) -> String {
         }
     }
     return String(characters.map { decodeCharacter(intervals: $0) })
+}
+
+/// Reads the CMC-7 line of a photo, trying small rotations until the decoded line passes its check digits.
+func readLine(in photo: CGImage) throws -> (text: String, degrees: Double)? {
+    for step in 0...20 {
+        for degrees in step == 0 ? [0] : [Double(step) / 10, -Double(step) / 10] {
+            let image = GreyImage(try rotated(photo, byDegrees: degrees))
+            let text = decode(bars: findBars(in: image, rows: findBandRows(in: image)))
+            let digits = text.filter { $0.isASCII && $0.isNumber }
+            if let line = try? CMC7Line(parsing: digits), CMC7Reading(line: line).isVerified {
+                return (text, degrees)
+            }
+        }
+    }
+    return nil
 }
 
 /// Decodes one character from its six intervals, taking the two widest as the long ones.

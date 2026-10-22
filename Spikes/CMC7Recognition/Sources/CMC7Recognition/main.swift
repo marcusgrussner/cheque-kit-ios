@@ -19,10 +19,13 @@ for row in csv.split(whereSeparator: \.isNewline).dropFirst() {
     let photo = try loadImage(at: samplesFolder.appending(path: "\(id)-front.heic"))
     let widthInInches = Double(fields[2])! / 25.4
     print(id, "photo: \(Int(Double(photo.width) / widthInInches)) dpi")
-    for degrees in [0, 0.25, 0.5, 1, 2] {
-        let image = GreyImage(try rotated(photo, byDegrees: degrees))
-        let bars = findBars(in: image, rows: findBandRows(in: image))
-        print("  \(degrees)°:", report(recognized: decode(bars: bars), groundTruth: groundTruth))
+    for tilt in [0, 0.5, 1, 2, -1.5] {
+        let tilted = try rotated(photo, byDegrees: tilt)
+        if let (text, correction) = try readLine(in: tilted) {
+            print("  tilt \(tilt)°, corrected by \(correction)°:", report(recognized: text, groundTruth: groundTruth))
+        } else {
+            print("  tilt \(tilt)°: no verified line within ±2°")
+        }
     }
 }
 
