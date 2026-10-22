@@ -12,13 +12,12 @@ for row in csv.split(whereSeparator: \.isNewline).dropFirst() {
     let fields = row.split(separator: ",", omittingEmptySubsequences: false)
     let id = fields[0]
     let groundTruth = String(fields[1])
-    guard  let line = try? CMC7Line(parsing: groundTruth), CMC7Reading(line: line).isVerified else {
+    guard let line = try? CMC7Line(parsing: groundTruth), CMC7Reading(line: line).isVerified else {
         print(id, "ground truth is not a verified line, skipped")
         continue
     }
     let photo = try loadImage(at: samplesFolder.appending(path: "\(id)-front.heic"))
-    let widthInInches = Double(fields[2])! / 25.4
-    print(id, "photo: \(Int(Double(photo.width) / widthInInches)) dpi")
+    print(id, "photo: \(photo.width)×\(photo.height) px")
     for tilt in [0, 0.5, 1, 2, -1.5] {
         let tilted = try rotated(photo, byDegrees: tilt)
         if let (text, correction) = try readLine(in: tilted) {
