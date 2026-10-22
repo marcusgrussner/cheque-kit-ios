@@ -1,0 +1,10 @@
+# Read the CMC-7 line by decoding its bars and gaps
+
+ChequeKit reads the CMC-7 line geometrically: it finds the band of the line, the bars of each character and the six intervals between them, takes the two widest intervals as the long ones, and maps that pattern to a character; it corrects skew by trying small rotations until the line passes its three check digits. It uses neither Vision's text recognition nor a Core ML model. Each CMC-7 character is seven bars with six intervals, two of them long, which gives 15 codes for the ten digits and five symbols. No public specification exists (ISO 1004-2 is paywalled), so the table comes from our samples and agrees with patents US4845348 and US3309667A. A spike on real cheques (`Spikes/CMC7Recognition`) settled the choice. Vision's `VNRecognizeTextRequest`, at revisions 2 and 3 and at both recognition levels, read 0 to 4 of the 30 digits on the easiest photos possible, sharp and cropped, because it sees the bars as letters such as `i` and `l`. The geometric decoder read every line correctly: 3 cheques from one bank, one of them an uncropped photo, at 300 dpi and above and with up to 2° of skew. A Core ML model would need hundreds of labelled cheques we do not have, and a model to ship.
+
+## Consequences
+
+- Reading needs about 300 dpi across the cheque, since the narrowest intervals are about 0.15 mm wide; this is a separate requirement from the 200 dpi of the Compe-oriented export. A 1080p video frame is not enough, a 4K frame is.
+- Searching the rotation tests up to 41 hypotheses and so weakens what a verified reading proves; a reading is accepted only when neighbouring angles or consecutive frames agree, as auto-capture already requires.
+- Decoding is deterministic, runs on-device without a model, and can be tested with procedurally drawn CMC-7 glyphs, as the synthetic fixtures require.
+- The evidence comes from one bank. The first cheque from another bank, or the first real photo whose line fails to read, reopens this decision through a new ADR that supersedes this one.
