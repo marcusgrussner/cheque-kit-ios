@@ -19,10 +19,7 @@ for row in csv.split(whereSeparator: \.isNewline).dropFirst() {
     let image = GreyImage(try loadImage(at: samplesFolder.appending(path: "\(id)-front.heic")))
     let band = findBandRows(in: image)
     let bars = findBars(in: image, rows: band)
-    let gaps = zip(bars, bars.dropFirst()).map { $1.lowerBound - $0.upperBound }
-    print(id, "band rows \(band), \(bars.count) bars")
-    print("  bar widths:", histogram(bars.map(\.count)))
-    print("  gaps:", histogram(gaps))
+    print(id, report(recognized: decode(bars: bars), groundTruth: groundTruth))
 }
 
 // MARK: - Images
