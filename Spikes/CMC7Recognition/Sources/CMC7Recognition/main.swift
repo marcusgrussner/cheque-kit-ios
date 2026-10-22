@@ -19,10 +19,10 @@ for row in csv.split(whereSeparator: \.isNewline).dropFirst() {
     let photo = try loadImage(at: samplesFolder.appending(path: "\(id)-front.heic"))
     let widthInInches = Double(fields[2])! / 25.4
     print(id, "photo: \(Int(Double(photo.width) / widthInInches)) dpi")
-    for dpi in [400, 300, 250, 200] {
-        let image = GreyImage(try scaled(photo, toWidth: Int(Double(dpi) * widthInInches)))
+    for degrees in [0, 0.25, 0.5, 1, 2] {
+        let image = GreyImage(try rotated(photo, byDegrees: degrees))
         let bars = findBars(in: image, rows: findBandRows(in: image))
-        print("  \(dpi) dpi:", report(recognized: decode(bars: bars), groundTruth: groundTruth))
+        print("  \(degrees)°:", report(recognized: decode(bars: bars), groundTruth: groundTruth))
     }
 }
 
@@ -51,6 +51,23 @@ func scaled(_ image: CGImage, toWidth width: Int) throws -> CGImage {
     context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
     guard let scaled = context.makeImage() else { throw SpikeError.unscalableImage }
     return scaled
+}
+
+func rotated(_ image: CGImage, byDegrees degrees: Double) throws -> CGImage {
+    let width = CGFloat(image.width), height = CGFloat(image.height)
+    guard
+        let context = CGContext(
+            data: nil, width: image.width, height: image.height, bitsPerComponent: 8, bytesPerRow: 0,
+            space: CGColorSpaceCreateDeviceGray(), bitmapInfo: CGImageAlphaInfo.none.rawValue)
+    else { throw SpikeError.unscalableImage }
+    context.setFillColor(gray: 1, alpha: 1)
+    context.fill(CGRect(x: 0, y: 0, width: width, height: height))
+    context.interpolationQuality = .high
+    context.translateBy(x: width / 2, y: height / 2)
+    context.rotate(by: degrees * .pi / 180)
+    context.draw(image, in: CGRect(x: -width / 2, y: -height / 2, width: width, height: height))
+    guard let rotated = context.makeImage() else { throw SpikeError.unscalableImage }
+    return rotated
 }
 
 // MARK: - Report
