@@ -32,6 +32,21 @@ struct ChequeDetectorTests {
         #expect(corners.maximumDistance(to: cheque) < 20)
     }
 
+    @Test("Takes a photo cropped to the cheque whole")
+    func takesCroppedPhotoWhole() throws {
+        // GIVEN
+        let wholePhoto = ChequeCorners(
+            topLeft: CGPoint(x: 0, y: 900), topRight: CGPoint(x: 2100, y: 900),
+            bottomRight: CGPoint(x: 2100, y: 0), bottomLeft: .zero)
+        let photo = SyntheticPhoto.make(cheque: wholePhoto, size: CGSize(width: 2100, height: 900))
+
+        // WHEN
+        let corners = try ChequeDetector.corners(in: photo)
+
+        // THEN
+        #expect(corners == wholePhoto)
+    }
+
     @Test("Finds no cheque in an empty photo")
     func findsNoCheque() throws {
         // GIVEN
