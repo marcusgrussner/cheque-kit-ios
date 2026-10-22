@@ -10,6 +10,7 @@ let cmc7Characters: [String: Character] = [
 
 /// Decodes the bars of a CMC-7 line into its characters, with "?" for a character it cannot read.
 func decode(bars: [Range<Int>]) -> String {
+    guard bars.count > 1 else { return "" }
     let barWidth = median(bars.map(\.count))
     let gaps = zip(bars, bars.dropFirst()).map { $1.lowerBound - $0.upperBound }
     let shortGap = median(gaps)
@@ -39,7 +40,8 @@ func readLine(in photo: CGImage) throws -> (text: String, degrees: Double)? {
     for step in 0...20 {
         for degrees in step == 0 ? [0] : [Double(step) / 10, -Double(step) / 10] {
             let image = GreyImage(try rotated(photo, byDegrees: degrees))
-            let text = decode(bars: findBars(in: image, rows: findBandRows(in: image)))
+            guard let band = findBandRows(in: image) else { continue }
+            let text = decode(bars: findBars(in: image, rows: band))
             let digits = text.filter { $0.isASCII && $0.isNumber }
             if let line = try? CMC7Line(parsing: digits), CMC7Reading(line: line).isVerified {
                 return (text, degrees)

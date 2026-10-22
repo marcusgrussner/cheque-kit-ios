@@ -25,16 +25,18 @@ struct GreyImage {
     }
 }
 
-/// The rows of the CMC-7 line: the lowest run of rows where ink covers more than 5% of the row.
-func findBandRows(in image: GreyImage) -> ClosedRange<Int> {
+/// The rows of the CMC-7 line: the lowest run of rows where ink covers more than 5% of the row,
+/// or `nil` when no row does.
+func findBandRows(in image: GreyImage) -> ClosedRange<Int>? {
     func isInkRow(_ y: Int) -> Bool {
         let ink = (0..<image.width).count { x in image.isInk(x: x, y: y) }
         return Double(ink) / Double(image.width) > 0.05
     }
     var bottom = image.height - 1
-    while !isInkRow(bottom) { bottom -= 1 }
+    while bottom >= 0, !isInkRow(bottom) { bottom -= 1 }
+    guard bottom >= 0 else { return nil }
     var top = bottom
-    while isInkRow(top - 1) { top -= 1 }
+    while top > 0, isInkRow(top - 1) { top -= 1 }
     return top...bottom
 }
 
