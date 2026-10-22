@@ -2,18 +2,11 @@ import ChequeKit
 import CoreGraphics
 import Foundation
 import ImageIO
-import Vision
 
 let samplesFolder =
     CommandLine.arguments.dropFirst().first.map { URL(filePath: $0) }
     ?? FileManager.default.homeDirectoryForCurrentUser.appending(path: "ChequeKit-PrivateSamples")
 let csv = try String(contentsOf: samplesFolder.appending(path: "samples.csv"), encoding: .utf8)
-let configurations: [(revision: Int, level: VNRequestTextRecognitionLevel)] = [
-    (VNRecognizeTextRequestRevision2, .accurate),
-    (VNRecognizeTextRequestRevision2, .fast),
-    (VNRecognizeTextRequestRevision3, .accurate),
-    (VNRecognizeTextRequestRevision3, .fast),
-]
 
 for row in csv.split(whereSeparator: \.isNewline).dropFirst() {
     let fields = row.split(separator: ",", omittingEmptySubsequences: false)
@@ -43,20 +36,6 @@ func loadImage(at url: URL) throws -> CGImage {
         throw SpikeError.unreadableImage(url)
     }
     return image
-}
-
-// MARK: - Vision
-
-func recognizeText(in image: CGImage, revision: Int, level: VNRequestTextRecognitionLevel) throws -> String {
-    let request = VNRecognizeTextRequest()
-    request.revision = revision
-    request.recognitionLevel = level
-    request.usesLanguageCorrection = false
-    request.regionOfInterest = CGRect(x: 0, y: 0, width: 1, height: 0.15)
-    try VNImageRequestHandler(cgImage: image).perform([request])
-    let observations = (request.results ?? []).sorted { $0.boundingBox.minX < $1.boundingBox.minX }
-
-    return observations.compactMap { $0.topCandidates(1).first?.string }.joined(separator: " ")
 }
 
 // MARK: - Report
