@@ -16,16 +16,21 @@ for row in csv.split(whereSeparator: \.isNewline).dropFirst() {
         print(id, "ground truth is not a verified line, skipped")
         continue
     }
-    let image = GreyImage(try loadImage(at: samplesFolder.appending(path: "\(id)-front.heic")))
-    let band = findBandRows(in: image)
-    let bars = findBars(in: image, rows: band)
-    print(id, report(recognized: decode(bars: bars), groundTruth: groundTruth))
+    let photo = try loadImage(at: samplesFolder.appending(path: "\(id)-front.heic"))
+    let widthInInches = Double(fields[2])! / 25.4
+    print(id, "photo: \(Int(Double(photo.width) / widthInInches)) dpi")
+    for dpi in [400, 300, 250, 200] {
+        let image = GreyImage(try scaled(photo, toWidth: Int(Double(dpi) * widthInInches)))
+        let bars = findBars(in: image, rows: findBandRows(in: image))
+        print("  \(dpi) dpi:", report(recognized: decode(bars: bars), groundTruth: groundTruth))
+    }
 }
 
 // MARK: - Images
 
 enum SpikeError: Error {
     case unreadableImage(URL)
+    case unscalableImage
 }
 
 func loadImage(at url: URL) throws -> CGImage {
@@ -33,6 +38,19 @@ func loadImage(at url: URL) throws -> CGImage {
         throw SpikeError.unreadableImage(url)
     }
     return image
+}
+
+func scaled(_ image: CGImage, toWidth width: Int) throws -> CGImage {
+    let height = image.height * width / image.width
+    guard
+        let context = CGContext(
+            data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
+            space: CGColorSpaceCreateDeviceGray(), bitmapInfo: CGImageAlphaInfo.none.rawValue)
+    else { throw SpikeError.unscalableImage }
+    context.interpolationQuality = .high
+    context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+    guard let scaled = context.makeImage() else { throw SpikeError.unscalableImage }
+    return scaled
 }
 
 // MARK: - Report
