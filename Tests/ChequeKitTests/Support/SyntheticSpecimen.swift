@@ -1,4 +1,6 @@
 import CoreGraphics
+import CoreImage
+import CoreImage.CIFilterBuiltins
 
 @testable import ChequeKit
 
@@ -39,5 +41,18 @@ enum SyntheticSpecimen {
             x += 0.2 + 0.9
         }
         return context.makeImage()!
+    }
+
+    /// Photographs `specimen` on a dark grey background of `size`, with its corners at `corners`.
+    static func photo(of specimen: CGImage, at corners: ChequeCorners, size: CGSize) -> CGImage {
+        let filter = CIFilter.perspectiveTransform()
+        filter.inputImage = CIImage(cgImage: specimen)
+        filter.topLeft = corners.topLeft
+        filter.topRight = corners.topRight
+        filter.bottomRight = corners.bottomRight
+        filter.bottomLeft = corners.bottomLeft
+        let background = CIImage(color: CIColor(red: 0.2, green: 0.2, blue: 0.2))
+            .cropped(to: CGRect(origin: .zero, size: size))
+        return CIContext().createCGImage(filter.outputImage!.composited(over: background), from: background.extent)!
     }
 }
