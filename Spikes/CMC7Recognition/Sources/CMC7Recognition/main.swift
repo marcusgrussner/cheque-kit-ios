@@ -3,6 +3,8 @@ import CoreGraphics
 import Foundation
 import ImageIO
 
+@testable import ChequeKit
+
 let samplesFolder =
     CommandLine.arguments.dropFirst().first.map { URL(filePath: $0) }
     ?? FileManager.default.homeDirectoryForCurrentUser.appending(path: "ChequeKit-PrivateSamples")
@@ -18,13 +20,16 @@ for row in csv.split(whereSeparator: \.isNewline).dropFirst() {
     }
     let photo = try loadImage(at: samplesFolder.appending(path: "\(id)-front.heic"))
     print(id, "photo: \(photo.width)×\(photo.height) px")
-    for tilt in [0, 0.5, 1, 2, -1.5] {
-        let tilted = try rotated(photo, byDegrees: tilt)
-        if let (text, correction) = try readLine(in: tilted) {
-            print("  tilt \(tilt)°, corrected by \(correction)°:", report(recognized: text, groundTruth: groundTruth))
-        } else {
-            print("  tilt \(tilt)°: no verified line within ±2°")
-        }
+    guard let corners = try ChequeDetector.corners(in: photo) else {
+        print("  no cheque found")
+        continue
+    }
+    let cheque = try PerspectiveCorrector.corrected(photo, corners: corners)
+    print("  corrected: \(cheque.width)×\(cheque.height) px")
+    if let (text, correction) = try readLine(in: cheque) {
+        print("  corrected by \(correction)°:", report(recognized: text, groundTruth: groundTruth))
+    } else {
+        print("  no verified line within ±2°")
     }
 }
 
