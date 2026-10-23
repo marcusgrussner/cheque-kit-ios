@@ -17,6 +17,9 @@ struct ContentView: View {
                         ProgressView("Reading…")
                     }
                 }
+                if let reading {
+                    ReadingSection(reading: reading)
+                }
                 if let failure {
                     Section {
                         Text(failure).foregroundColor(.red)
