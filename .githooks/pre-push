@@ -1,0 +1,3 @@
+#!/bin/sh
+# Rejects a push while any test fails.
+exec swift test
