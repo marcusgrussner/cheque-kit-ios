@@ -18,4 +18,36 @@ enum CMC7Decoder {
         let pattern = String(intervals.indices.map { longIndices.contains($0) ? "L" : "S" })
         return characterByPattern[pattern]
     }
+
+    /// Decodes the bars of a CMC-7 line, with "?" for a character it cannot read.
+    ///
+    /// The bars are runs of columns, left to right. A bar much wider than the others is split, because ink can
+    /// close a short interval and merge two bars; an interval much wider than a short one ends a character.
+    static func text(bars: [Range<Int>]) -> String {
+        guard bars.count > 1 else { return "" }
+        let barWidth = median(bars.map(\.count))
+        let gaps = zip(bars, bars.dropFirst()).map { $1.lowerBound - $0.upperBound }
+        let shortGap = median(gaps)
+
+        var intervals: [Int] = []
+        for (index, bar) in bars.enumerated() {
+            let merged = Double(bar.count + shortGap) / Double(barWidth + shortGap)
+            intervals += Array(repeating: shortGap, count: max(1, Int(merged.rounded())) - 1)
+            if index < gaps.count { intervals.append(gaps[index]) }
+        }
+
+        var characters: [[Int]] = [[]]
+        for interval in intervals {
+            if interval > 4 * shortGap {
+                characters.append([])
+            } else {
+                characters[characters.count - 1].append(interval)
+            }
+        }
+        return String(characters.map { character(intervals: $0) ?? "?" })
+    }
+
+    private static func median(_ values: [Int]) -> Int {
+        values.sorted()[values.count / 2]
+    }
 }

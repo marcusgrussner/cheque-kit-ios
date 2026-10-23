@@ -42,4 +42,52 @@ struct CMC7DecoderTests {
         // THEN
         #expect(decoded == nil)
     }
+
+    @Test("Decodes a line of bars")
+    func decodesLine() {
+        // GIVEN
+        let bars = SyntheticBars.make("<00112341< 0180001235> 200001234566:")
+
+        // WHEN
+        let text = CMC7Decoder.text(bars: bars)
+
+        // THEN
+        #expect(text == "<00112341<0180001235>200001234566:")
+    }
+
+    @Test("Splits two bars that merged across a short interval")
+    func splitsMergedBars() {
+        // GIVEN
+        var bars = SyntheticBars.make("<00112341<")
+        bars[7] = bars[7].lowerBound..<bars[8].upperBound  // The first two bars of the first "0".
+        bars.remove(at: 8)
+
+        // WHEN
+        let text = CMC7Decoder.text(bars: bars)
+
+        // THEN
+        #expect(text == "<00112341<")
+    }
+
+    @Test("Marks a character it cannot read")
+    func marksUnreadableCharacter() {
+        // GIVEN
+        var bars = SyntheticBars.make("<00112341<")
+        bars.remove(at: 8)  // A bar between two short intervals of the first "0".
+
+        // WHEN
+        let text = CMC7Decoder.text(bars: bars)
+
+        // THEN
+        #expect(text == "<?0112341<")
+    }
+
+    @Test("Decodes nothing from fewer than two bars", arguments: [[], [0..<4]] as [[Range<Int>]])
+    func decodesNothingFromFewerThanTwoBars(bars: [Range<Int>]) {
+        // WHEN
+        let text = CMC7Decoder.text(bars: bars)
+
+        // THEN
+        #expect(text.isEmpty)
+    }
 }
