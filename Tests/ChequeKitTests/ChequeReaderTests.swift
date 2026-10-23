@@ -56,6 +56,48 @@ struct ChequeReaderTests {
         }
     }
 
+    @Test("Accepts a verified reading that a neighbouring angle confirms")
+    func acceptsConfirmedReading() throws {
+        // GIVEN
+        let verified = CMC7Reading(line: try CMC7Line(parsing: Fixtures.specimenLine))
+        let readings = [0: verified, 1: verified]
+
+        // WHEN
+        let reading = ChequeReader.agreedReading { readings[$0] }
+
+        // THEN
+        #expect(reading == verified)
+    }
+
+    @Test("Ignores a verified reading that no neighbouring angle confirms")
+    func ignoresUnconfirmedReading() throws {
+        // GIVEN
+        let lucky = CMC7Reading(line: try CMC7Line(parsing: "001123400180001245200001234566"))
+        let verified = CMC7Reading(line: try CMC7Line(parsing: Fixtures.specimenLine))
+        let readings = [0: lucky, 5: verified, -5: verified, 6: verified]
+
+        // WHEN
+        let reading = ChequeReader.agreedReading { readings[$0] }
+
+        // THEN
+        #expect(reading == verified)
+    }
+
+    @Test("Falls back to the first unverified reading")
+    func fallsBackToUnverifiedReading() throws {
+        // GIVEN
+        let misprinted = Fixtures.specimenLine.replacing(position: 30, with: "0")
+        let unverified = CMC7Reading(line: try CMC7Line(parsing: misprinted))
+        let lucky = CMC7Reading(line: try CMC7Line(parsing: Fixtures.specimenLine))
+        let readings = [2: unverified, 7: lucky]
+
+        // WHEN
+        let reading = ChequeReader.agreedReading { readings[$0] }
+
+        // THEN
+        #expect(reading == unverified)
+    }
+
     private static let perspective = ChequeCorners(
         topLeft: CGPoint(x: 360, y: 1900), topRight: CGPoint(x: 3480, y: 1960),
         bottomRight: CGPoint(x: 3640, y: 520), bottomLeft: CGPoint(x: 200, y: 600))

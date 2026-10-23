@@ -24,8 +24,8 @@ public struct ChequeReader: Sendable {
     /// Reads the CMC-7 line of the cheque in a photo.
     ///
     /// The reader finds the cheque, straightens it and decodes its CMC-7 line, trying small rotations until the line
-    /// passes its check digits. When no rotation gives a verified reading, it returns the first unverified reading as
-    /// read, never correcting a digit, and the host app decides what to do with it.
+    /// passes its check digits at two neighbouring angles. When no rotation gives such a reading, it returns the first
+    /// unverified reading as read, never correcting a digit, and the host app decides what to do with it.
     ///
     /// The work runs off the caller's actor, so calling it from the main actor does not block the interface.
     ///
@@ -36,26 +36,53 @@ public struct ChequeReader: Sendable {
     @concurrent
     public func read(_ photo: CGImage) async throws -> CMC7Reading {
         guard let corners = try ChequeDetector.corners(in: photo) else { throw ReadError.chequeNotFound }
-        let cheque = try PerspectiveCorrector.corrected(photo, corners: corners)
+        let corrected = try PerspectiveCorrector.corrected(photo, corners: corners)
+        // Detected corners can sit a few pixels outside the cheque: trim 1% of each edge so that no background is left
+        // for a rotation to slant into the band.
+        let bounds = CGRect(x: 0, y: 0, width: corrected.width, height: corrected.height)
+        let cheque =
+            corrected.cropping(to: bounds.insetBy(dx: bounds.width / 100, dy: bounds.height / 100)) ?? corrected
 
-        var unverified: CMC7Reading?
-        for degrees in Self.angles {
-            let image = GreyImage(Self.rotated(cheque, byDegrees: degrees))
-            guard let band = image.bandRows() else { continue }
+        let reading = Self.agreedReading { tenths in
+            let image = GreyImage(Self.rotated(cheque, byDegrees: Double(tenths) / 10))
+            guard let band = image.bandRows() else { return nil }
             let digits = CMC7Decoder.text(bars: image.bars(in: band)).filter { $0.isASCII && $0.isNumber }
-            guard let line = try? CMC7Line(parsing: digits) else { continue }
-            let reading = CMC7Reading(line: line)
-            if reading.isVerified { return reading }
-            if unverified == nil { unverified = reading }
+            return (try? CMC7Line(parsing: digits)).map { CMC7Reading(line: $0) }
         }
-        guard let unverified else { throw ReadError.lineNotFound }
-        return unverified
+        guard let reading else { throw ReadError.lineNotFound }
+        return reading
     }
 
     // MARK: - Skew
 
-    /// No rotation first, then ±0.1° up to ±2°, smallest first.
-    private static let angles: [Double] = [0] + (1...20).flatMap { [Double($0) / 10, -Double($0) / 10] }
+    /// Searches rotations for a verified reading that a neighbouring rotation confirms, or else the first unverified
+    /// reading.
+    ///
+    /// Each verified reading the search finds was one more chance for a misread to pass the check digits, so a
+    /// verified reading counts only when the rotation 0.1° beside it reads the same line.
+    ///
+    /// - Parameter reading: The reading of the cheque rotated by a number of tenths of a degree, if any.
+    /// - Returns: The first confirmed verified reading, else the first unverified reading, else `nil`.
+    static func agreedReading(_ reading: (_ tenths: Int) -> CMC7Reading?) -> CMC7Reading? {
+        var cache: [Int: CMC7Reading?] = [:]
+        func cachedReading(_ tenths: Int) -> CMC7Reading? {
+            if let known = cache[tenths] { return known }
+            let new = reading(tenths)
+            cache[tenths] = new
+            return new
+        }
+
+        var unverified: CMC7Reading?
+        for tenths in [0] + (1...20).flatMap({ [$0, -$0] }) {
+            guard let candidate = cachedReading(tenths) else { continue }
+            if candidate.isVerified {
+                if [tenths - 1, tenths + 1].contains(where: { cachedReading($0) == candidate }) { return candidate }
+            } else if unverified == nil {
+                unverified = candidate
+            }
+        }
+        return unverified
+    }
 
     private static func rotated(_ image: CGImage, byDegrees degrees: Double) -> CGImage {
         let width = CGFloat(image.width)
