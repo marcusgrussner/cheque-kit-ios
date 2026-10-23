@@ -1,14 +1,22 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var isPicking = false
+    @State private var photo: CGImage?
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        NavigationView {
+            List {
+                Button("Choose a photo of a cheque") { isPicking = true }
+                if let photo {
+                    Text("\(photo.width) x \(photo.height) px")
+                }
+            }
+            .navigationTitle("ChequeKit")
         }
-        .padding()
+        .sheet(isPresented: $isPicking) {
+            PhotoPicker { image in photo = image.uprightCGImage() }
+        }
     }
 }
 
