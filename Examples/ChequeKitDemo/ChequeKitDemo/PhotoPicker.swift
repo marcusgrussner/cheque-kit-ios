@@ -14,7 +14,7 @@ struct PhotoPicker: UIViewControllerRepresentable {
         return picker
     }
 
-    func updateUIViewController(_ picker: PHPickerViewController, context: Context) { }
+    func updateUIViewController(_ picker: PHPickerViewController, context: Context) {}
 
     func makeCoordinator() -> Coordinator {
         Coordinator(onPick: onPick)
@@ -29,7 +29,9 @@ struct PhotoPicker: UIViewControllerRepresentable {
 
         func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
             picker.dismiss(animated: true)
-            guard let provider = results.first?.itemProvider, provider.canLoadObject(ofClass: UIImage.self) else { return }
+            guard let provider = results.first?.itemProvider, provider.canLoadObject(ofClass: UIImage.self) else {
+                return
+            }
             let onPick = onPick
             provider.loadObject(ofClass: UIImage.self) { object, _ in
                 guard let image = object as? UIImage else { return }
