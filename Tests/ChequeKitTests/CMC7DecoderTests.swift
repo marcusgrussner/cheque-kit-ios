@@ -90,4 +90,17 @@ struct CMC7DecoderTests {
         // THEN
         #expect(text.isEmpty)
     }
+
+    @Test("Decodes the line of a flat specimen")
+    func decodesFlatSpecimen() throws {
+        // GIVEN
+        let image = GreyImage(SyntheticSpecimen.make())
+        let band = try #require(image.bandRows())
+
+        // WHEN
+        let text = CMC7Decoder.text(bars: image.bars(in: band))
+
+        // THEN
+        #expect(text == "<00112341<0180001235>200001234566:")
+    }
 }
