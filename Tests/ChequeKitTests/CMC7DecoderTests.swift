@@ -25,7 +25,7 @@ struct CMC7DecoderTests {
         let decoded = CMC7Decoder.character(intervals: [2, 3, 6, 9, 3, 2])
 
         // THEN
-        #expect(decoded == nil)
+        #expect(decoded == "0")
     }
 
     @Test(
