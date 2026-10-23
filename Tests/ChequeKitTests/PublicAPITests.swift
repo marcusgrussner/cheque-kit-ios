@@ -29,4 +29,15 @@ struct PublicAPITests {
             try CMC7Line(parsing: Fixtures.specimenLine + "0")
         }
     }
+
+    @Test("Reports a photo without a cheque to a host app")
+    func reportsMissingChequeToHostApp() async {
+        // GIVEN
+        let photo = SyntheticPhoto.make(cheque: nil)
+
+        // WHEN / THEN
+        await #expect(throws: ChequeReader.ReadError.chequeNotFound) {
+            try await ChequeReader().read(photo)
+        }
+    }
 }
