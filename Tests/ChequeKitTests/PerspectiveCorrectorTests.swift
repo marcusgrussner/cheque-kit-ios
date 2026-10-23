@@ -20,4 +20,21 @@ struct PerspectiveCorrectorTests {
         #expect(corrected.width == 1382)
         #expect(corrected.height == 592)
     }
+
+    @Test("Keeps the cheque upright")
+    func keepsChequeUpright() throws {
+        // GIVEN
+        let cheque = ChequeCorners(
+            topLeft: CGPoint(x: 380, y: 980), topRight: CGPoint(x: 1620, y: 1040),
+            bottomRight: CGPoint(x: 1760, y: 350), bottomLeft: CGPoint(x: 240, y: 420))
+        let photo = SyntheticPhoto.make(cheque: cheque, marked: true)
+
+        // WHEN
+        let corrected = try PerspectiveCorrector.corrected(photo, corners: cheque)
+
+        // THEN
+        #expect(corrected.greyLevel(across: 0.075, down: 0.15) < 0.5)
+        #expect(corrected.greyLevel(across: 0.925, down: 0.15) > 0.5)
+        #expect(corrected.greyLevel(across: 0.075, down: 0.85) > 0.5)
+    }
 }
