@@ -32,16 +32,15 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: swift --version
       - run: swift test
-  
-  - name: Build libraries for iOS 15
-    run: |
-      for scheme in ChequeKit ChequeKitUI; do
-        xcodebuild \
-          -scheme "$scheme" \
-          -configuration Release \
-          -destination 'generic/platform=iOS' \
-          -derivedDataPath "$RUNNER_TEMP/ChequeKit-iOS" \
-          IPHONEOS_DEPLOYMENT_TARGET=15.0 \
-          CODE_SIGNING_ALLOWED=NO \
-          build
-      done
+      - name: Build libraries for iOS 15
+        run: |
+          for scheme in ChequeKit ChequeKitUI; do
+            xcodebuild \
+              -scheme "$scheme" \
+              -configuration Release \
+              -destination 'generic/platform=iOS' \
+              -derivedDataPath "$RUNNER_TEMP/ChequeKit-iOS" \
+              IPHONEOS_DEPLOYMENT_TARGET=15.0 \
+              CODE_SIGNING_ALLOWED=NO \
+              build
+          done
