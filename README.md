@@ -7,9 +7,24 @@ On-device capture of Brazilian bank cheques and validated reading of their CMC-7
 
 ## What it does
 
-- **Captures both sides of a cheque**, front and back, cropped and perspective-corrected, with quality checks for blur, glare, exposure and framing.
-- **Reads the CMC-7 line** printed along the bottom of the front and validates its three check digits, returning the bank code, branch, clearing code, cheque number, cheque type and account field.
-- **Fits your app, your way**: `ChequeKit` is a headless core you drive with your own UI; `ChequeKitUI` is a ready-made capture flow that adopts your institution's visual identity.
+- **Reads a cheque's CMC-7 line from a still photo**, finding the cheque and correcting its perspective before decoding.
+- **Checks all three check digits**, returning the bank code, branch, clearing code, cheque number, cheque type and account field. Unverified readings are returned without correcting any digit.
+- **Runs on-device**, with a minimal iOS example app.
+
+Camera capture, image-quality checks, theming and the ready-made `ChequeKitUI` flow are planned for later versions. `ChequeKitUI` is currently a placeholder.
+
+## Reading a photo
+
+```swift
+import ChequeKit
+
+let reading = try await ChequeReader().read(photo) // photo is an upright CGImage
+if reading.isVerified {
+    // All three check digits match.
+}
+```
+
+Reading currently needs about 300 dpi across the cheque. Validation so far covers three cheques from one bank and synthetic specimens; robustness across banks and capture conditions remains to be established. Matching check digits do not prove that a cheque is authentic.
 
 ## What it does not do
 
@@ -17,7 +32,7 @@ On-device capture of Brazilian bank cheques and validated reading of their CMC-7
 - **No proof that the back belongs to the same cheque** as the front.
 - **No reading of endorsements, signatures, crossings or handwritten fields** in 1.0.
 - **No deposit**: depositing a cheque is the host app's business; ChequeKit captures and reads.
-- **No claim of Compe compliance**: the optional greyscale export follows public references and is not certified.
+- **No claim of Compe compliance.** A Compe-oriented export is planned but is not implemented.
 
 ## Why cheques in 2026?
 
@@ -31,7 +46,7 @@ Brazil still processed **112.5 million cheques worth R$ 472.7 billion in 2025**.
 | Xcode | 26 |
 | Swift | 6.2 |
 
-Automated tests run on iOS 17 and later; iOS 15 is verified manually before each release ([ADR-0002](docs/adr/0002-ios-15-floor-tests-on-ios-17.md)).
+CI runs automated tests on macOS with Xcode 26.0.1 and builds both libraries for an iOS 15.0 deployment target with Xcode 26.2. Runtime behaviour on a physical iOS 15 device has not yet been validated. See [ADR-0002](docs/adr/0002-ios-15-floor-tests-on-ios-17.md) for the intended validation policy.
 
 ## Privacy
 
