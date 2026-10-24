@@ -1,3 +1,8 @@
 #!/bin/sh
+# Rejects a commit on main, where changes arrive only through pull requests.
+if [ "$(git symbolic-ref --short HEAD)" = "main" ]; then
+    echo "Commit on a branch, not on main." >&2
+    exit 1
+fi
 # Rejects a commit whose Swift files fail the strict lint.
 exec swift format lint --strict --recursive Sources Tests Package.swift
