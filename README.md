@@ -39,11 +39,21 @@ Automated tests run on iOS 17 and later; iOS 15 is verified manually before each
 - **Images stay in memory.** ChequeKit never writes them to disk; what happens to a scan result is up to the host app.
 - **Cheques carry personal data** (names, CPF/CNPJ, account data, signatures) protected by Brazil's LGPD. Handle scan results accordingly.
 
+## Example app
+
+`Examples/ChequeKitDemo` is a small iOS app that reads the CMC-7 line of a cheque photo with ChequeKit: choose a photo, and it shows the line's fields and whether each check digit matches. It uses the package in this repository, so it always runs the code of the branch you are on.
+
+1. Open `Examples/ChequeKitDemo/ChequeKitDemo.xcodeproj` in Xcode and run the `ChequeKitDemo` scheme on a simulator. The project was created with Xcode 27.
+2. Add a photo of a cheque to the simulator's library: `xcrun simctl addmedia booted cheque.heic`.
+3. Tap **Choose a photo of a cheque**.
+
+The app keeps nothing: it reads the photo in memory, and the photo picker hands it only the photo you choose, without access to the rest of the library.
+
 ## Roadmap
 
-- **0.1**: core reads and validates the CMC-7 line from a still image.
+- **0.1**: core reads and validates the CMC-7 line from a still image, with a minimal example app.
 - **0.5**: camera capture flow with auto-capture and theming.
-- **1.0**: stable API, DocC documentation and an example app.
+- **1.0**: stable API, DocC documentation and a complete example app.
 
 ## Documentation
 
