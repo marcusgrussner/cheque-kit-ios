@@ -29,15 +29,24 @@ struct ContentView: View {
             .navigationTitle("ChequeKit")
         }
         .sheet(isPresented: $isPicking) {
-            PhotoPicker { image in read(image) }
+            PhotoPicker(onSelect: startReading, onPick: read)
         }
     }
 
-    private func read(_ image: UIImage) {
-        guard let photo = image.uprightCGImage() else { return }
+    /// Marks the app busy from the moment a photo is chosen, so that no second photo can be chosen while the first
+    /// one loads and is read.
+    private func startReading() {
         reading = nil
         failure = nil
         isReading = true
+    }
+
+    private func read(_ image: UIImage?) {
+        guard let photo = image?.uprightCGImage() else {
+            failure = "The photo could not be loaded."
+            isReading = false
+            return
+        }
         Task {
             defer { isReading = false }
             do {
