@@ -17,6 +17,11 @@ let package = Package(
             name: "ChequeKitUI",
             dependencies: [.target(name: "ChequeKit")]
         ),
+        .executableTarget(
+            name: "ChequeKitEvaluation",
+            dependencies: [.target(name: "ChequeKit")],
+            path: "Tools/ChequeKitEvaluation"
+        ),
         .testTarget(
             name: "ChequeKitTests",
             dependencies: [.target(name: "ChequeKit")]
