@@ -1,0 +1,9 @@
+version: 2
+updates:
+  # ChequeKit has no runtime dependencies, so only the actions the workflows pin by SHA need updating.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: ci
