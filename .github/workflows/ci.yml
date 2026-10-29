@@ -48,3 +48,44 @@ jobs:
               CODE_SIGNING_ALLOWED=NO \
               build
           done
+
+  test-ios:
+    name: Test on iOS
+    runs-on: macos-26
+    timeout-minutes: 30
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: xcodebuild -version
+      - name: Pick an iPhone simulator
+        run: |
+          udid=$(xcrun simctl list devices available --json \
+            | jq -r '[.devices | to_entries[] | select(.key | contains("iOS")) | .value[]
+                | select(.name | startswith("iPhone"))] | last | .udid')
+          test -n "$udid" && test "$udid" != null
+          echo "SIMULATOR_UDID=$udid" >> "$GITHUB_ENV"
+      - run: |
+          xcodebuild \
+            -scheme ChequeKit-Package \
+            -destination "id=$SIMULATOR_UDID" \
+            -derivedDataPath "$RUNNER_TEMP/ChequeKit-iOS-Tests" \
+            test
+
+  example:
+    name: Build example app
+    runs-on: macos-26
+    timeout-minutes: 20
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.0.1.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: xcodebuild -version
+      - run: |
+          xcodebuild \
+            -project Examples/ChequeKitDemo/ChequeKitDemo.xcodeproj \
+            -scheme ChequeKitDemo \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/ChequeKitDemo" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
