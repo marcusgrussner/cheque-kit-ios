@@ -46,7 +46,7 @@ Brazil still processed **112.5 million cheques worth R$ 472.7 billion in 2025**.
 | Xcode | 26 |
 | Swift | 6.2 |
 
-CI runs automated tests on macOS with Xcode 26.0.1 and builds both libraries for an iOS 15.0 deployment target with Xcode 26.2. Runtime behaviour on a physical iOS 15 device has not yet been validated. See [ADR-0002](docs/adr/0002-ios-15-floor-tests-on-ios-17.md) for the intended validation policy.
+CI runs automated tests on macOS with Xcode 26.0.1 and on an iOS simulator with Xcode 26.5, and builds both libraries for an iOS 15.0 deployment target with Xcode 26.2. The example app is not built in CI; it is built and run by hand before each release. Runtime behaviour on a physical iOS 15 device has not yet been validated. See [ADR-0002](docs/adr/0002-ios-15-floor-tests-on-ios-17.md) for the intended validation policy.
 
 ## Privacy
 
@@ -58,7 +58,7 @@ CI runs automated tests on macOS with Xcode 26.0.1 and builds both libraries for
 
 `Examples/ChequeKitDemo` is a small iOS app that reads the CMC-7 line of a cheque photo with ChequeKit: choose a photo, and it shows the line's fields and whether each check digit matches. It uses the package in this repository, so it always runs the code of the branch you are on.
 
-1. Open `Examples/ChequeKitDemo/ChequeKitDemo.xcodeproj` in Xcode and run the `ChequeKitDemo` scheme on a simulator. The project was created with Xcode 27.
+1. Open `Examples/ChequeKitDemo/ChequeKitDemo.xcodeproj` in Xcode and run the `ChequeKitDemo` scheme on a simulator. The project opens with Xcode 26 or later.
 2. Add a photo of a cheque to the simulator's library: `xcrun simctl addmedia booted cheque.heic`.
 3. Tap **Choose a photo of a cheque**.
 
