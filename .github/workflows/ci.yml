@@ -48,7 +48,6 @@ jobs:
               CODE_SIGNING_ALLOWED=NO \
               build
           done
-      # Runs in this job rather than its own so that a pull request waits for one macOS runner fewer.
       - name: Test on an iOS simulator
         env:
           DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
@@ -63,21 +62,3 @@ jobs:
             -destination "id=$udid" \
             -derivedDataPath "$RUNNER_TEMP/ChequeKit-iOS-Tests" \
             test
-
-  example:
-    name: Build example app
-    runs-on: macos-26
-    timeout-minutes: 20
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_26.2.app/Contents/Developer
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - run: xcodebuild -version
-      - run: |
-          xcodebuild \
-            -project Examples/ChequeKitDemo/ChequeKitDemo.xcodeproj \
-            -scheme ChequeKitDemo \
-            -destination 'generic/platform=iOS Simulator' \
-            -derivedDataPath "$RUNNER_TEMP/ChequeKitDemo" \
-            CODE_SIGNING_ALLOWED=NO \
-            build

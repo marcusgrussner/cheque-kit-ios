@@ -46,7 +46,7 @@ Brazil still processed **112.5 million cheques worth R$ 472.7 billion in 2025**.
 | Xcode | 26 |
 | Swift | 6.2 |
 
-CI runs automated tests on macOS with Xcode 26.0.1 and on an iOS simulator with Xcode 26.5, builds both libraries for an iOS 15.0 deployment target with Xcode 26.2, and builds the example app with Xcode 26.2. Runtime behaviour on a physical iOS 15 device has not yet been validated. See [ADR-0002](docs/adr/0002-ios-15-floor-tests-on-ios-17.md) for the intended validation policy.
+CI runs automated tests on macOS with Xcode 26.0.1 and on an iOS simulator with Xcode 26.5, and builds both libraries for an iOS 15.0 deployment target with Xcode 26.2. The example app is not built in CI; it is built and run by hand before each release. Runtime behaviour on a physical iOS 15 device has not yet been validated. See [ADR-0002](docs/adr/0002-ios-15-floor-tests-on-ios-17.md) for the intended validation policy.
 
 ## Privacy
 
