@@ -8,6 +8,7 @@
 // to evaluation.csv in the samples folder. The tool exits with status 1 when any reading is a false accept.
 
 import ChequeKit
+import CoreGraphics
 import Foundation
 
 let arguments = CommandLine.arguments.dropFirst()
@@ -30,8 +31,18 @@ struct Read {
 }
 
 var reads: [Read] = []
+var unreadable: [String] = []
 for sample in samples {
-    let photo = try sample.image()
+    // A photo that cannot be decoded is a problem with the samples, not with the reader: skip it and keep the rest of
+    // the evaluation, rather than count it against the reader or lose the reads made so far.
+    let photo: CGImage
+    do {
+        photo = try sample.image()
+    } catch {
+        print("Skipped \(sample.id): \(error)")
+        unreadable.append(sample.id)
+        continue
+    }
     for variant in variants {
         let image = variant.apply(to: photo)
         let start = DispatchTime.now()
@@ -59,6 +70,10 @@ let csv =
 let report = folder.appendingPathComponent("evaluation.csv")
 try csv.write(to: report, atomically: true, encoding: .utf8)
 print("\nPer-read report: \(report.path)")
+
+if !unreadable.isEmpty {
+    print("\nSkipped \(unreadable.count) samples whose photo could not be read: \(unreadable.joined(separator: ", "))")
+}
 
 let falseAccepts = reads.count { if case .falseAccept = $0.outcome { true } else { false } }
 if falseAccepts > 0 {
