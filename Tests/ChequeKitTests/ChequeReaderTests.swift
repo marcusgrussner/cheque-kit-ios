@@ -1,4 +1,6 @@
 import CoreGraphics
+import CoreImage
+import CoreImage.CIFilterBuiltins
 import Testing
 
 @testable import ChequeKit
@@ -12,6 +14,20 @@ struct ChequeReaderTests {
 
         // WHEN
         let reading = try await ChequeReader().read(photo)
+
+        // THEN
+        #expect(reading.isVerified)
+        #expect(reading.line == (try CMC7Line(parsing: Fixtures.specimenLine)))
+    }
+
+    @Test("Reads the CMC-7 line of a specimen photographed in dim or bright light", arguments: [-2.0, 1.0, 1.5])
+    func readsSpecimenInDimOrBrightLight(stops: Double) async throws {
+        // GIVEN
+        let photo = SyntheticSpecimen.photo(
+            of: SyntheticSpecimen.make(), at: Self.perspective, size: CGSize(width: 3840, height: 2400))
+
+        // WHEN
+        let reading = try await ChequeReader().read(Self.exposed(photo, by: stops))
 
         // THEN
         #expect(reading.isVerified)
@@ -96,6 +112,14 @@ struct ChequeReaderTests {
 
         // THEN
         #expect(reading == unverified)
+    }
+
+    /// Returns `photo` darkened or lightened by `stops`, as a camera exposing for too little or too much light would.
+    private static func exposed(_ photo: CGImage, by stops: Double) -> CGImage {
+        let filter = CIFilter.exposureAdjust()
+        filter.inputImage = CIImage(cgImage: photo)
+        filter.ev = Float(stops)
+        return CIContext().createCGImage(filter.outputImage!, from: filter.outputImage!.extent)!
     }
 
     private static let perspective = ChequeCorners(
