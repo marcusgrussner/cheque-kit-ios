@@ -75,6 +75,7 @@ The app keeps nothing: it reads the photo in memory, and the photo picker hands 
 - [Glossary](GLOSSARY.md): the domain vocabulary used across code and docs.
 - [Architecture decision records](docs/adr/): why ChequeKit is built the way it is.
 - [Security policy](SECURITY.md): how to report a vulnerability.
+- [Evaluation tool](Tools/ChequeKitEvaluation/README.md): how well ChequeKit reads a folder of real cheques.
 
 ## License
 

@@ -8,7 +8,7 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "CMC7Recognition",
-            dependencies: [.product(name: "ChequeKit", package: "cheque-kit")]
+            dependencies: [.product(name: "ChequeKit", package: "cheque-kit-ios")]
         )
     ]
 )
