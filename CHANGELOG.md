@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- A DocC documentation catalog: a landing page that groups the API by task, and the articles "Reading a cheque photo" and "Verified and unverified readings".
+
 ## [0.1.0] - 2026-10-29
 
 ### Added

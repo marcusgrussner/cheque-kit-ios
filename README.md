@@ -72,6 +72,7 @@ The app keeps nothing: it reads the photo in memory, and the photo picker hands 
 
 ## Documentation
 
+- API documentation: open the package in Xcode and choose **Product → Build Documentation**. It covers every public type and two articles, on reading a cheque photo and on verified and unverified readings.
 - [Glossary](GLOSSARY.md): the domain vocabulary used across code and docs.
 - [Architecture decision records](docs/adr/): why ChequeKit is built the way it is.
 - [Security policy](SECURITY.md): how to report a vulnerability.

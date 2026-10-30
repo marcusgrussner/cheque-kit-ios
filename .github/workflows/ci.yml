@@ -48,6 +48,15 @@ jobs:
               CODE_SIGNING_ALLOWED=NO \
               build
           done
+      - name: Build the documentation
+        env:
+          DEVELOPER_DIR: /Applications/Xcode_26.2.app/Contents/Developer
+        run: |
+          xcodebuild docbuild \
+            -scheme ChequeKit \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/ChequeKit-Docs" \
+            OTHER_DOCC_FLAGS="--warnings-as-errors"
       - name: Test on an iOS simulator
         env:
           DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
